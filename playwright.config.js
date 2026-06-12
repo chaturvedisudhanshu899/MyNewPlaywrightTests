@@ -15,10 +15,10 @@ module.exports = defineConfig({
   fullyParallel: false,             // sequential for stability on Flipkart
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,                       // retry each test up to 1 time in CI, 0 times locally to fail fast
-  workers: process.env.CI ? 1 : undefined,               // use all CPU cores locally, 1 worker in CI for stability
-  timeout: 60_000,                  // 60s per test (Flipkart can be slow)
+  workers: process.env.CI ? 2 : undefined,               // use 2 CPU cores in CI, all cores locally
+  timeout: 25_000,                  // 25s per test (fail fast in CI)
   expect: {
-    timeout: 15_000,                // 15s for expect assertions
+    timeout: 5_000,                 // 5s for expect assertions
   },
   reporter: [
     ['html', { open: 'never' }],
@@ -32,6 +32,7 @@ module.exports = defineConfig({
     headless: true,
     viewport: { width: 1440, height: 900 },
     ignoreHTTPSErrors: true,
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
