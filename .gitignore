@@ -1,0 +1,35 @@
+# ── Dependencies ──────────────────────────────────────────
+node_modules/
+
+# ── Environment secrets (keep .env.example only) ─────────
+.env
+.env.local
+.env.qa
+.env.staging
+.env.production
+
+# ── Playwright artifacts ─────────────────────────────────
+test-results/
+playwright-report/
+blob-report/
+
+# ── Allure artifacts ─────────────────────────────────────
+allure-results/
+allure-report/
+
+# ── IDE & editor ─────────────────────────────────────────
+.vscode/
+.cursor/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS files ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ─────────────────────────────────────────────────
+*.log
+npm-debug.log*

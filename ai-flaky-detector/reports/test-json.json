@@ -1,0 +1,209 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\playwright.config.js",
+    "rootDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "UI-Chromium",
+        "name": "UI-Chromium",
+        "testDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/flipkart-ui.spec.js",
+          "**/flipkart-flaky.spec.js"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "UI-Firefox",
+        "name": "UI-Firefox",
+        "testDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/flipkart-ui.spec.js"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "API-Tests",
+        "name": "API-Tests",
+        "testDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/flipkart-api.spec.js"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "Flaky-Suite",
+        "name": "Flaky-Suite",
+        "testDir": "C:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/flipkart-flaky.spec.js"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.59.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "flipkart-flaky.spec.js",
+      "file": "flipkart-flaky.spec.js",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🎲 Flaky-B: Random Assertions",
+          "file": "flipkart-flaky.spec.js",
+          "line": 92,
+          "column": 6,
+          "specs": [
+            {
+              "title": "FLK_B01 | Random coin-flip assertion — passes ~50% of the time",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "Flaky-Suite",
+                  "projectName": "Flaky-Suite",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 8587,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\tests\\flipkart-flaky.spec.js:100:18",
+                        "location": {
+                          "file": "C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\tests\\flipkart-flaky.spec.js",
+                          "column": 18,
+                          "line": 100
+                        },
+                        "snippet": "   98 |     const flip = Math.random() > 0.5;\n   99 |     // This assertion will fail ~50% of runs\n> 100 |     expect(flip).toBeTruthy();\n      |                  ^\n  101 |   });\n  102 |\n  103 |   test('FLK_B02 | Assert result count equals random expected value', async ({ page }) => {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\tests\\flipkart-flaky.spec.js",
+                            "column": 18,
+                            "line": 100
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mfalse\u001b[39m\n\n   98 |     const flip = Math.random() > 0.5;\n   99 |     // This assertion will fail ~50% of runs\n> 100 |     expect(flip).toBeTruthy();\n      |                  ^\n  101 |   });\n  102 |\n  103 |   test('FLK_B02 | Assert result count equals random expected value', async ({ page }) => {\n    at C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\tests\\flipkart-flaky.spec.js:100:18"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-05-18T14:57:33.400Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\test-results\\flipkart-flaky-🎲-Flaky-B--ae554-ion-—-passes-50-of-the-time-Flaky-Suite\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\test-results\\flipkart-flaky-🎲-Flaky-B--ae554-ion-—-passes-50-of-the-time-Flaky-Suite\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\test-results\\flipkart-flaky-🎲-Flaky-B--ae554-ion-—-passes-50-of-the-time-Flaky-Suite\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\test-results\\flipkart-flaky-🎲-Flaky-B--ae554-ion-—-passes-50-of-the-time-Flaky-Suite\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\chatu\\OneDrive\\Desktop\\MyNewPlaywrightTests\\tests\\flipkart-flaky.spec.js",
+                        "column": 18,
+                        "line": 100
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6910a90a74a72e24cbd0-32337c9cd0affbfa0cac",
+              "file": "flipkart-flaky.spec.js",
+              "line": 94,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-05-18T14:57:31.228Z",
+    "duration": 12213.563,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

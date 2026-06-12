@@ -1,0 +1,355 @@
+name: 🎭 Playwright Test Suite
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  TRIGGERS
+# ──────────────────────────────────────────────────────────────────────────────
+on:
+  # 1️⃣  Push to main / develop → run full suite automatically
+  push:
+    branches: [main, develop]
+
+  # 2️⃣  Pull-request targeting main → run full suite
+  pull_request:
+    branches: [main]
+
+  # 3️⃣  Scheduled nightly run at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+
+  # 4️⃣  ✅ Manual "Run workflow" button in GitHub Actions UI
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '🌍 Target environment'
+        required: true
+        default: 'qa'
+        type: choice
+        options:
+          - qa
+          - staging
+          - production
+
+      suite:
+        description: '🧪 Which test suite to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ui
+          - api
+          - flaky
+
+      browser:
+        description: '🌐 Browser (ui suite only)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - chromium
+          - firefox
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  GLOBAL ENVIRONMENT VARIABLES
+# ──────────────────────────────────────────────────────────────────────────────
+env:
+  CI: true
+  # Falls back to 'qa' when triggered by push / PR / schedule
+  ENV: ${{ github.event.inputs.environment || 'qa' }}
+  NODE_VERSION: '20'
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  JOB 1 — API TESTS  (fast · no real browser · runs first)
+# ──────────────────────────────────────────────────────────────────────────────
+jobs:
+  api-tests:
+    name: 🔌 API Tests
+    runs-on: ubuntu-latest
+    # Skip when a specific non-api suite is requested via manual trigger
+    if: |
+      github.event_name != 'workflow_dispatch' ||
+      github.event.inputs.suite == 'all'       ||
+      github.event.inputs.suite == 'api'
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: 🎭 Install Playwright (Chromium only)
+        run: npx playwright install chromium --with-deps
+
+      - name: 🧪 Run API tests  [env=${{ env.ENV }}]
+        run: npx playwright test tests/flipkart-api.spec.js --project=API-Tests
+        env:
+          ENV: ${{ env.ENV }}
+
+      - name: 📤 Upload HTML report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: html-report-api
+          path: playwright-report/
+          retention-days: 14
+
+      - name: 📤 Upload Allure results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-api
+          path: allure-results/
+          retention-days: 14
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  JOB 2 — UI TESTS  (parallel matrix: chromium + firefox)
+# ──────────────────────────────────────────────────────────────────────────────
+  ui-tests:
+    name: 🖥️ UI Tests — ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    needs: api-tests
+    # Run even if api-tests was skipped; fail-fast=false so both browsers run
+    if: |
+      always() &&
+      (github.event_name != 'workflow_dispatch' ||
+       github.event.inputs.suite == 'all'       ||
+       github.event.inputs.suite == 'ui')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser:
+          - chromium
+          - firefox
+        # Filter matrix by the browser input (empty string = all)
+        exclude:
+          - browser: ${{ (github.event.inputs.browser == 'chromium') && 'firefox'  || '' }}
+          - browser: ${{ (github.event.inputs.browser == 'firefox')  && 'chromium' || '' }}
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: 🎭 Install Playwright (${{ matrix.browser }})
+        run: npx playwright install ${{ matrix.browser }} --with-deps
+
+      - name: 🧪 Run UI tests  [browser=${{ matrix.browser }}  env=${{ env.ENV }}]
+        run: |
+          PROJECT="UI-Chromium"
+          if [ "${{ matrix.browser }}" = "firefox" ]; then
+            PROJECT="UI-Firefox"
+          fi
+          npx playwright test tests/flipkart-ui.spec.js --project=$PROJECT
+        shell: bash
+        env:
+          ENV: ${{ env.ENV }}
+
+      - name: 📤 Upload HTML report (${{ matrix.browser }})
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: html-report-ui-${{ matrix.browser }}
+          path: playwright-report/
+          retention-days: 14
+
+      - name: 📤 Upload Allure results (${{ matrix.browser }})
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-ui-${{ matrix.browser }}
+          path: allure-results/
+          retention-days: 14
+
+      - name: 📸 Upload failure screenshots (${{ matrix.browser }})
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: screenshots-ui-${{ matrix.browser }}
+          path: test-results/
+          retention-days: 7
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  JOB 3 — FLAKY TESTS  (run TWICE in parallel to expose instability)
+# ──────────────────────────────────────────────────────────────────────────────
+  flaky-tests:
+    name: 🎲 Flaky Tests — run #${{ matrix.run }}
+    runs-on: ubuntu-latest
+    if: |
+      always() &&
+      (github.event_name != 'workflow_dispatch' ||
+       github.event.inputs.suite == 'all'       ||
+       github.event.inputs.suite == 'flaky')
+
+    strategy:
+      fail-fast: false
+      matrix:
+        run: [1, 2]          # ← two identical runs in parallel
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: 🎭 Install Playwright (Chromium)
+        run: npx playwright install chromium --with-deps
+
+      - name: 🧪 Run Flaky tests — attempt #${{ matrix.run }}
+        run: |
+          npx playwright test tests/flipkart-flaky.spec.js \
+            --project=Flaky-Suite \
+            --retries=2 \
+            --output=test-results/flaky-run-${{ matrix.run }}
+        continue-on-error: true
+        env:
+          ENV: ${{ env.ENV }}
+
+      - name: 📤 Upload Allure results — run #${{ matrix.run }}
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-results-flaky-run-${{ matrix.run }}
+          path: allure-results/
+          retention-days: 30
+
+      - name: 📤 Upload test results — run #${{ matrix.run }}
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-flaky-run-${{ matrix.run }}
+          path: test-results/flaky-run-${{ matrix.run }}/
+          retention-days: 30
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  JOB 4 — GENERATE & PUBLISH ALLURE REPORT
+# ──────────────────────────────────────────────────────────────────────────────
+  allure-report:
+    name: 📊 Allure Report
+    runs-on: ubuntu-latest
+    needs: [api-tests, ui-tests, flaky-tests]
+    if: always()
+
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: ☕ Setup Java 17 (Allure CLI requirement)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 📥 Download all Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          path: temp-allure
+        continue-on-error: true
+
+      - name: 🔀 Merge all Allure results into one folder
+        run: |
+          mkdir -p allure-results
+          find temp-allure -type f -name "*.json" -exec cp {} allure-results/ \;
+          find temp-allure -type f -name "*.xml"  -exec cp {} allure-results/ \;
+          find temp-allure -type f -name "*.txt"  -exec cp {} allure-results/ \;
+          echo "Total result files: $(ls allure-results | wc -l)"
+        shell: bash
+        continue-on-error: true
+
+      - name: 🏗️ Generate Allure HTML report
+        run: npm run allure:generate
+        continue-on-error: true
+
+      - name: 📤 Upload Allure report artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: allure-report
+          path: allure-report/
+          retention-days: 30
+
+# ──────────────────────────────────────────────────────────────────────────────
+#  JOB 5 — SLACK NOTIFICATION  (always runs last)
+# ──────────────────────────────────────────────────────────────────────────────
+  notify-slack:
+    name: 📣 Slack Notification
+    runs-on: ubuntu-latest
+    needs: [api-tests, ui-tests, flaky-tests, allure-report]
+    if: always() && secrets.SLACK_WEBHOOK_URL != ''
+
+    steps:
+      - name: 🔔 Send Slack notification
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {
+              "text": "${{ (needs.api-tests.result == 'success' && needs.ui-tests.result == 'success') && '✅ *PASSED*' || '❌ *FAILED*' }} — Playwright Tests",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "${{ (needs.api-tests.result == 'success' && needs.ui-tests.result == 'success') && '✅ Tests Passed' || '❌ Tests Failed' }}"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    { "type": "mrkdwn", "text": "*Repository:*\n${{ github.repository }}" },
+                    { "type": "mrkdwn", "text": "*Branch:*\n`${{ github.ref_name }}`" },
+                    { "type": "mrkdwn", "text": "*Environment:*\n`${{ env.ENV }}`" },
+                    { "type": "mrkdwn", "text": "*Suite:*\n`${{ github.event.inputs.suite || 'all' }}`" },
+                    { "type": "mrkdwn", "text": "*Triggered by:*\n${{ github.actor }}" },
+                    { "type": "mrkdwn", "text": "*API Tests:*\n${{ needs.api-tests.result }}" },
+                    { "type": "mrkdwn", "text": "*UI Tests:*\n${{ needs.ui-tests.result }}" },
+                    { "type": "mrkdwn", "text": "*Flaky Tests:*\n${{ needs.flaky-tests.result }}" }
+                  ]
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": { "type": "plain_text", "text": "📋 View Run" },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK

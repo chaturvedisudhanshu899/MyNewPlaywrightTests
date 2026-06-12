@@ -1,0 +1,53 @@
+{
+  "searchKeywords": {
+    "laptop": "laptop",
+    "mobile": "samsung galaxy",
+    "headphones": "boat headphones",
+    "tv": "55 inch smart tv",
+    "camera": "canon dslr camera",
+    "empty": "",
+    "special": "###$$$%%%",
+    "longQuery": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "categories": {
+    "electronics": "Electronics",
+    "mobiles": "Mobiles",
+    "fashion": "Fashion",
+    "appliances": "Appliances"
+  },
+  "priceFilters": {
+    "low": "Under ₹500",
+    "medium": "₹500 – ₹1,000",
+    "high": "Above ₹10,000"
+  },
+  "sortOptions": {
+    "relevance": "Relevance",
+    "priceLow": "Price -- Low to High",
+    "priceHigh": "Price -- High to Low",
+    "rating": "Rating",
+    "newest": "Newest First"
+  },
+  "flipkartApiBase": "https://www.flipkart.com",
+  "dummyApiBase": "https://dummyjson.com",
+  "fakeStoreApi": "https://fakestoreapi.com",
+  "users": {
+    "validUser": {
+      "email": "testuser@flipkart.com",
+      "password": "Test@12345",
+      "phone": "9876543210"
+    },
+    "invalidUser": {
+      "email": "invalid@notexist.com",
+      "password": "wrongpassword"
+    }
+  },
+  "pagination": {
+    "firstPage": 1,
+    "secondPage": 2
+  },
+  "timeout": {
+    "short": 5000,
+    "medium": 15000,
+    "long": 30000
+  }
+}

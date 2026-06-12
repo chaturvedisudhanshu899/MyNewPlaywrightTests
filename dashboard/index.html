@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Flaky Test Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --muted: #94a3b8;
+      --flaky: #f59e0b; --fail: #ef4444; --pass: #22c55e; --heal: #8b5cf6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem; }
+    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    .subtitle { color: var(--muted); margin-bottom: 2rem; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .stat { background: var(--card); border-radius: 12px; padding: 1.25rem; text-align: center; }
+    .stat .num { font-size: 2rem; font-weight: 700; }
+    .stat .label { color: var(--muted); font-size: 0.85rem; margin-top: 0.25rem; }
+    .stat.flaky .num { color: var(--flaky); }
+    .stat.fail .num { color: var(--fail); }
+    .stat.pass .num { color: var(--pass); }
+    .stat.heal .num { color: var(--heal); }
+    section { margin-bottom: 2rem; }
+    section h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--muted); }
+    .test-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .test-card { background: var(--card); border-radius: 10px; padding: 1rem 1.25rem; border-left: 4px solid var(--muted); }
+    .test-card.flaky { border-left-color: var(--flaky); }
+    .test-card.fail { border-left-color: var(--fail); }
+    .test-card.pass { border-left-color: var(--pass); }
+    .test-title { font-weight: 600; margin-bottom: 0.35rem; }
+    .test-meta { font-size: 0.85rem; color: var(--muted); }
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.35rem; background: #334155; }
+    .empty { color: var(--muted); padding: 2rem; text-align: center; }
+    #loadErr { color: var(--fail); display: none; }
+    code { background: #334155; padding: 0.1rem 0.4rem; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>AI Flaky Test Dashboard</h1>
+  <p class="subtitle" id="generatedAt">Loading report...</p>
+  <p id="loadErr">No data.json found. Run: <code>npm run ai:flaky</code></p>
+  <div class="stats" id="stats"></div>
+  <section>
+    <h2>Test results</h2>
+    <div class="test-list" id="testList"></div>
+  </section>
+  <section id="healingSection" style="display:none">
+    <h2>Healing applied</h2>
+    <div id="healingInfo"></div>
+  </section>
+  <script>
+    async function load() {
+      try {
+        const res = await fetch('./data.json?' + Date.now());
+        if (!res.ok) throw new Error('not found');
+        render(await res.json());
+        document.getElementById('loadErr').style.display = 'none';
+      } catch {
+        document.getElementById('loadErr').style.display = 'block';
+        document.getElementById('generatedAt').textContent = '';
+      }
+    }
+    function render(data) {
+      document.getElementById('generatedAt').textContent =
+        'Generated ' + new Date(data.generatedAt).toLocaleString() + ' | ' + (data.spec || '') + ' | ' + (data.totalRuns || 0) + ' runs';
+      document.getElementById('stats').innerHTML = [
+        ['Tests', data.totalTests || 0, ''],
+        ['Flaky', data.flakyTests || 0, 'flaky'],
+        ['Always fail', data.alwaysFailTests || 0, 'fail'],
+        ['Stable', data.stableTests || 0, 'pass'],
+        ['Selector fixes', data.healing?.selectorFixes || 0, 'heal'],
+      ].map(function(row) {
+        return '<div class="stat ' + row[2] + '"><div class="num">' + row[1] + '</div><div class="label">' + row[0] + '</div></div>';
+      }).join('');
+      var tests = data.tests || [];
+      var list = document.getElementById('testList');
+      if (!tests.length) { list.innerHTML = '<p class="empty">No test data.</p>'; return; }
+      list.innerHTML = tests.map(function(t) {
+        var cls = t.isFlaky ? 'flaky' : (t.isAlwaysFail ? 'fail' : 'pass');
+        var status = t.isFlaky ? 'Flaky' : (t.isAlwaysFail ? 'Fail' : 'Stable');
+        var cat = (t.primaryClass && t.primaryClass.label) || '';
+        var fix = (t.recommendation || '').split('\n')[0];
+        return '<div class="test-card ' + cls + '"><div class="test-title">' + esc(t.title) + '</div>' +
+          '<div class="test-meta"><span class="badge">' + status + '</span><span class="badge">' + (t.passRate || 0) + '% pass</span>' +
+          (cat ? '<span class="badge">' + esc(cat) + '</span>' : '') + '</div>' +
+          (fix ? '<div class="test-meta" style="margin-top:0.5rem">' + esc(fix) + '</div>' : '') + '</div>';
+      }).join('');
+      if (data.healing && data.healing.enabled) {
+        document.getElementById('healingSection').style.display = 'block';
+        document.getElementById('healingInfo').innerHTML = '<p class="test-meta">Selector fixes: ' + data.healing.selectorFixes + ' | Spec patches: ' + data.healing.specPatches + '</p>';
+      }
+    }
+    function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    load();
+    setInterval(load, 10000);
+  </script>
+</body>
+</html>
