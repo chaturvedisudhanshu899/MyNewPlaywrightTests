@@ -290,7 +290,9 @@ jobs:
         continue-on-error: true
 
       - name: 🏗️ Generate Allure HTML report
-        run: npm run allure:generate
+        run: |
+          npm run allure:generate
+          mkdir -p allure-report
         continue-on-error: true
 
       - name: 📤 Upload Allure report artifact
@@ -308,21 +310,22 @@ jobs:
     name: 📣 Slack Notification
     runs-on: ubuntu-latest
     needs: [api-tests, ui-tests, flaky-tests, allure-report]
-    if: always() && secrets.SLACK_WEBHOOK_URL != ''
+    if: always()
 
     steps:
       - name: 🔔 Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
         uses: slackapi/slack-github-action@v1.26.0
         with:
           payload: |
             {
-              "text": "${{ (needs.api-tests.result == 'success' && needs.ui-tests.result == 'success') && '✅ *PASSED*' || '❌ *FAILED*' }} — Playwright Tests",
+              "text": "${{ ((needs.api-tests.result == 'success' || needs.api-tests.result == 'skipped') && (needs.ui-tests.result == 'success' || needs.ui-tests.result == 'skipped')) && '✅ *PASSED*' || '❌ *FAILED*' }} — Playwright Tests",
               "blocks": [
                 {
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "${{ (needs.api-tests.result == 'success' && needs.ui-tests.result == 'success') && '✅ Tests Passed' || '❌ Tests Failed' }}"
+                    "text": "${{ ((needs.api-tests.result == 'success' || needs.api-tests.result == 'skipped') && (needs.ui-tests.result == 'success' || needs.ui-tests.result == 'skipped')) && '✅ Tests Passed' || '❌ Tests Failed' }}"
                   }
                 },
                 {
