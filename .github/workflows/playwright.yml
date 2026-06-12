@@ -25,6 +25,8 @@ on:
         default: 'qa'
         type: choice
         options:
+          - dev
+          - demo
           - qa
           - staging
           - production
@@ -279,6 +281,24 @@ jobs:
           pattern: allure-results-*
           path: temp-allure
         continue-on-error: true
+
+      - name: 📥 Retrieve previous run Allure history
+        continue-on-error: true
+        run: |
+          PREVIOUS_RUN_ID=$(gh run list --workflow "${{ github.workflow }}" --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          if [ -n "$PREVIOUS_RUN_ID" ]; then
+            echo "Downloading history from previous run ID: $PREVIOUS_RUN_ID"
+            gh run download $PREVIOUS_RUN_ID --name allure-report --dir prev-allure-report
+            if [ -d "prev-allure-report/history" ]; then
+              mkdir -p allure-results
+              cp -r prev-allure-report/history allure-results/
+              echo "Previous history copied to allure-results/history"
+            fi
+          else
+            echo "No previous successful run found."
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔀 Merge all Allure results into one folder
         run: |

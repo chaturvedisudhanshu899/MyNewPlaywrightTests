@@ -9,10 +9,10 @@ This document details how the Playwright Test Automation framework implements th
 | # | Requirement | Implementation Status | Implementation Details & Reference Files |
 |---|---|---|---|
 | **1** | **Config-driven changes (No code modifications for config edits)** | ✅ Completed | Managed via `.env.<env>` files and dynamically loaded in [playwright.config.js](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/playwright.config.js). |
-| **2** | **Support runs across all environments** | ✅ Completed | Configured for `qa`, `staging`, and `production` environments via custom env profiles. |
-| **3** | **Run automation without code access (GitHub UI / CI-CD)** | ✅ Completed | Handled by the custom GitHub Actions workflow in [playwright.yml](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.github/workflows/playwright.yml) utilizing `workflow_dispatch`. |
+| **2** | **Support runs across all environments** | ✅ Completed | Configured for `dev`, `demo`, `qa`, `staging`, and `production` environments via custom env profiles. |
+| **3** | **Run automation without code access (GitHub UI / CI-CD)** | ✅ Completed | Handled by the custom GitHub Actions workflow in [playwright.yml](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.github/workflows/playwright.yml) utilizing `workflow_dispatch` with Dev, Demo, QA, Staging, and Production options. |
 | **4** | **Fast execution: 1000 Test Cases run in under 10 minutes** | ✅ Completed | Achieved through Playwright parallel workers, headless modes, lightweight API tests, and CI sharding support. |
-| **5** | **Access reports & historical run data** | ✅ Completed | GitHub Artifacts store and retain Playwright HTML reports, failure traces, and Allure results. |
+| **5** | **Access reports & historical run data** | ✅ Completed | GitHub Artifacts store run details, and the workflow pulls the previous run's history to build historical trends automatically. |
 | **6** | **Allure Report Integration** | ✅ Completed | Visual reporting using `allure-playwright` and CLI commands mapped in [package.json](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/package.json). |
 | **7** | **Slack Notification & Reporting** | ✅ Completed | Real-time Slack notifications via [SlackReporter.js](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/utils/SlackReporter.js) on test completion. |
 | **8** | **Proper Documentation** | ✅ Completed | Covered comprehensively by this framework mapping and the main [README.md](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/README.md). |
@@ -21,7 +21,7 @@ This document details how the Playwright Test Automation framework implements th
 
 ## ⚙️ 1. Config-Driven Design
 The framework separates code from configuration. No test files or utility code need modification when changing target environment parameters or configurations.
-* **Environment Variables**: Managed via environment-specific files like [.env.qa](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.env.qa), [.env.staging](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.env.staging), and [.env.production](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.env.production).
+* **Environment Variables**: Managed via environment-specific files like [.env.dev](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.env.dev), [.env.demo](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.env.demo), [.env.qa](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.env.qa), [.env.staging](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.env.staging), and [.env.production](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.env.production).
 * **Loading Logic**: [playwright.config.js](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/playwright.config.js) dynamically selects the right file based on the `ENV` variable:
   ```javascript
   const env = process.env.ENV || 'qa';
@@ -38,6 +38,12 @@ The framework separates code from configuration. No test files or utility code n
 You can run the automation test suite against any target environment using pre-configured scripts that inject environment variables:
 
 ```bash
+# Run against the Dev environment
+npm run test:dev
+
+# Run against the Demo environment
+npm run test:demo
+
 # Run against the QA environment (default config)
 npm run test:qa
 
@@ -61,7 +67,7 @@ You can trigger the automation workflow **without accessing or modifying the cod
 ### GitHub Actions Workflow: [playwright.yml](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.github/workflows/playwright.yml)
 Using GitHub's `workflow_dispatch` trigger, non-technical team members can execute tests with custom inputs from a user-friendly UI:
 
-1. **Environment Input**: Choose the target environment (`qa`, `staging`, `production`).
+1. **Environment Input**: Choose the target environment (`dev`, `demo`, `qa`, `staging`, `production`).
 2. **Suite Input**: Choose what tests to run (`all`, `ui`, `api`, `flaky`).
 3. **Browser Input**: Choose the target browser for UI tests (`all`, `chromium`, `firefox`).
 
@@ -102,6 +108,7 @@ Test results, artifacts, and execution histories are preserved across runs.
   * **Playwright HTML Report** (`html-report-*`): Step-by-step trace of runs.
   * **Allure Results** (`allure-results-*`): Raw metrics to generate visual graphs.
   * **Traces and Videos**: Retained only on failures to optimize space (`retain-on-failure` config).
+* **Automatic History Retention**: To support historical trend data and timeline graphs, the workflow dynamically queries the GitHub API for the last successful run's report, downloads its `history` folder, and merges it into the new execution's allure results.
 * **Retention Policy**: Stored in GitHub logs for 14-30 days to facilitate debugging and cross-team historical reviews.
 
 ---

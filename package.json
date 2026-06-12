@@ -32,6 +32,8 @@
     "allure:generate": "allure generate allure-results --clean -o allure-report",
     "allure:serve": "allure serve allure-results",
     "allure:clean": "npx rimraf allure-results allure-report",
+    "test:dev": "cross-env ENV=dev npx playwright test",
+    "test:demo": "cross-env ENV=demo npx playwright test",
     "test:qa": "cross-env ENV=qa npx playwright test",
     "test:staging": "cross-env ENV=staging npx playwright test",
     "test:production": "cross-env ENV=production npx playwright test"
