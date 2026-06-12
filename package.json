@@ -5,7 +5,7 @@
   "author": "QA Automation",
   "license": "ISC",
   "scripts": {
-    "test": "npx playwright test",
+    "test": "npx playwright test --project=UI-Chromium --project=API-Tests",
     "test:ui": "npx playwright test tests/flipkart-ui.spec.js --project=UI-Chromium",
     "test:ui:firefox": "npx playwright test tests/flipkart-ui.spec.js --project=UI-Firefox",
     "test:api": "npx playwright test tests/flipkart-api.spec.js --project=API-Tests",

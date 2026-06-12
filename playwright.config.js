@@ -14,8 +14,8 @@ module.exports = defineConfig({
   testDir: './tests',
   fullyParallel: false,             // sequential for stability on Flipkart
   forbidOnly: !!process.env.CI,
-  retries: 2,                       // retry each test up to 2 times → run "twice" for flaky detection
-  workers: 1,                       // 1 worker so tests don't race on shared state
+  retries: process.env.CI ? 1 : 0,                       // retry each test up to 1 time in CI, 0 times locally to fail fast
+  workers: process.env.CI ? 1 : undefined,               // use all CPU cores locally, 1 worker in CI for stability
   timeout: 60_000,                  // 60s per test (Flipkart can be slow)
   expect: {
     timeout: 15_000,                // 15s for expect assertions
@@ -45,7 +45,7 @@ module.exports = defineConfig({
     // ── UI tests ──────────────────────────────────────────────
     {
       name: 'UI-Chromium',
-      testMatch: ['**/flipkart-ui.spec.js', '**/flipkart-flaky.spec.js'],
+      testMatch: ['**/flipkart-ui.spec.js'],
       use: {
         ...devices['Desktop Chrome'],
         // NOTE: No channel:'chrome' here — CI uses Chromium (installed via playwright install)
@@ -63,6 +63,7 @@ module.exports = defineConfig({
       name: 'API-Tests',
       testMatch: ['**/flipkart-api.spec.js'],
       use: { browserName: 'chromium' },   // still needed but page won't open
+      fullyParallel: true,
     },
 
     // ── Flaky-only quick run ───────────────────────────────────
