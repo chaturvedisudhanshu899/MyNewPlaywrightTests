@@ -9,15 +9,15 @@ class FlipkartSearchPage {
     this.page = page;
 
     // ── Results ──────────────────────────────────────────────────────
-    this.resultItems     = page.locator('div[data-id], div._1AtVbE div._13oc-S');
-    this.productTitles   = page.locator('div._4rR01T, a.s1Q9rs, a._2rpwqI');
-    this.productPrices   = page.locator('div._30jeq3._1_WHN1, div._30jeq3');
-    this.productRatings  = page.locator('div._3LWZlK');
+    this.resultItems     = page.locator('div.RGLWAk, div[data-id], div._1AtVbE div._13oc-S');
+    this.productTitles   = page.locator('div.RGLWAk a[title], div.RGLWAk a.pIpigb, div._4rR01T, a.s1Q9rs, a._2rpwqI');
+    this.productPrices   = page.locator('div.RGLWAk a.fb4uj3 div.hZ3P6w, div.RGLWAk a:has-text("₹"), div._30jeq3._1_WHN1, div._30jeq3');
+    this.productRatings  = page.locator('div.RGLWAk div._3LWZlK, div._3LWZlK');
     this.noResults       = page.locator('div._3kkiJh, p:has-text("No results"), img[alt*="result"]');
 
     // ── Filters ──────────────────────────────────────────────────────
     this.filterSection   = page.locator('div._1bvKBh, div._2A_Tye');
-    this.sortDropdown    = page.locator('div._1l_oM0 span, div[class*="sort"] span').first();
+    this.sortDropdown    = page.locator('div._1l_oM0 span, div[class*="sort"] span, span:has-text("Sort By")').first();
     this.filterLabels    = page.locator('div._2A_Tye label, div._2A_Tye li');
     this.brandFilters    = page.locator('div._2A_Tye:has(div:has-text("Brand")) label');
     this.priceRangeMin   = page.locator('input[placeholder="Min"]');
@@ -28,8 +28,8 @@ class FlipkartSearchPage {
     this.sortOptions     = page.locator('div._2iQFn li, div._15ZFfz li');
 
     // ── Pagination ───────────────────────────────────────────────────
-    this.nextPageBtn     = page.locator('a._1LKTO3:has-text("Next"), nav._33jlOe a:last-child');
-    this.pagination      = page.locator('div._2MImiq, nav._33jlOe');
+    this.nextPageBtn     = page.locator('a:has-text("Next"), a._1LKTO3:has-text("Next"), nav a:last-child').first();
+    this.pagination      = page.locator('div._2MImiq, nav._33jlOe, nav').first();
 
     // ── Sponsored ────────────────────────────────────────────────────
     this.sponsoredLabel  = page.locator('span._2p6azh:has-text("Ad")');

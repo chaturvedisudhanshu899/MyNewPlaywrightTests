@@ -88,7 +88,7 @@ function isWithinTolerance(actual, expected, tolerancePercent = 5) {
  */
 async function dismissLoginPopup(page) {
   try {
-    const closeBtn = page.locator('button._2KpZ6l._2doB4z');
+    const closeBtn = page.locator('span:has-text("✕"), button:has-text("✕"), button._2KpZ6l._2doB4z').first();
     if (await closeBtn.isVisible({ timeout: 5000 })) {
       await closeBtn.click();
     }

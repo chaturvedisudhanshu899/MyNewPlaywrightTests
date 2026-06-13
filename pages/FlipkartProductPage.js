@@ -9,21 +9,21 @@ class FlipkartProductPage {
     this.page = page;
 
     // ── Product Details ──────────────────────────────────────────────
-    this.productTitle      = page.locator('span.B_NuCI, h1._35KyD6').first();
-    this.finalPrice        = page.locator('div._30jeq3._16Jk6d').first();
-    this.originalPrice     = page.locator('div._3I9_wc._2p6azh').first();
+    this.productTitle      = page.locator('h1, span.B_NuCI, h1._35KyD6').first();
+    this.finalPrice        = page.locator('div.v1zwn21m.v1zwn20, div.v1zwn20, div.CTTtEa div:has-text("₹"), div._30jeq3._16Jk6d').first();
+    this.originalPrice     = page.locator('div.OmE16y, div._3I9_wc._2p6azh').first();
     this.discountLabel     = page.locator('div._3Ay6Sb span').first();
     this.rating            = page.locator('div._3LWZlK').first();
     this.ratingCount       = page.locator('span._13vcmD').first();
     this.sellerName        = page.locator('div._3pfkQA').first();
 
     // ── Images ───────────────────────────────────────────────────────
-    this.mainImage         = page.locator('img._396cs4._2amPTt._3qGmMb, div._3btXLz img').first();
-    this.thumbnails        = page.locator('li._3nMexc img, ul._3k3e6F li img');
+    this.mainImage         = page.locator('img._396cs4._2amPTt._3qGmMb, div._3btXLz img, div.CTTtEa img').first();
+    this.thumbnails        = page.locator('li._3nMexc img, ul._3k3e6F li img, img.q6DClP');
 
     // ── Buttons ──────────────────────────────────────────────────────
-    this.addToCartBtn      = page.locator('button._2KpZ6l:has-text("Add to Cart"), button._2KpZ6l.hGSR34').first();
-    this.buyNowBtn         = page.locator('button._2KpZ6l._2U9uOA:has-text("Buy Now"), button._2KpZ6l').first();
+    this.addToCartBtn      = page.locator('button:has-text("Add to Cart"), button._2KpZ6l:has-text("Add to Cart"), button._2KpZ6l.hGSR34').first();
+    this.buyNowBtn         = page.locator('button:has-text("Buy Now"), button._2KpZ6l._2U9uOA:has-text("Buy Now"), button._2KpZ6l').first();
     this.wishlistBtn       = page.locator('button._1e6xmD, button:has-text("Wishlist")').first();
 
     // ── Specifications ───────────────────────────────────────────────
@@ -40,9 +40,9 @@ class FlipkartProductPage {
     this.outOfStock        = page.locator('div._16FRp0:has-text("Out of Stock"), div:has-text("Currently unavailable")');
 
     // ── Pincode check ────────────────────────────────────────────────
-    this.pincodeInput      = page.locator('input._3XPlc3, input[placeholder*="pincode"]').first();
-    this.pincodeCheckBtn   = page.locator('button._3EHmxo, button:has-text("Check")').first();
-    this.deliveryInfo      = page.locator('div._2Tpdn3, div._396QI4').first();
+    this.pincodeInput      = page.locator('input[placeholder*="pincode"], input._3XPlc3').first();
+    this.pincodeCheckBtn   = page.locator('span:has-text("Check"), button:has-text("Check"), button._3EHmxo').first();
+    this.deliveryInfo      = page.locator('div._2Tpdn3, div._396QI4, div.v2-2zM').first();
   }
 
   // ── Actions ─────────────────────────────────────────────────────────

@@ -12,17 +12,17 @@ class FlipkartHomePage {
 
     // ── Navigation / Header ──────────────────────────────────────────
     this.searchBox       = page.locator('input[name="q"], input[title="Search for products, brands and more"]').first();
-    this.searchButton    = page.locator('button[type="submit"], button._2iLD__').first();
-    this.loginButton     = page.locator('a:has-text("Login"), a._1H9Ais').first();
-    this.cartIcon        = page.locator('a[href="/viewcart"]').first();
-    this.logo            = page.locator('a._1PLKL7, img[alt="Flipkart"]').first();
+    this.searchButton    = page.locator('form button[type="submit"], button[type="submit"], button._2iLD__').first();
+    this.loginButton     = page.locator('span:has-text("Login"), a:has-text("Login"), a._1H9Ais').first();
+    this.cartIcon        = page.locator('a[href*="/viewcart"], a[href*="/cart"], a._3SkBxJ').first();
+    this.logo            = page.locator('img[alt="Flipkart"], a._1PLKL7').first();
 
     // ── Login Modal ──────────────────────────────────────────────────
-    this.loginModal      = page.locator('._2ix_2-, form.K0hhCe').first();
+    this.loginModal      = page.locator('div:has-text("Login"), ._2ix_2-, form.K0hhCe').first();
     this.mobileInput     = page.locator('input[type="text"][autocomplete="off"]').first();
     this.passwordInput   = page.locator('input[type="password"]').first();
-    this.loginSubmit     = page.locator('button._2AkmmA._1LctnI, button:has-text("Login")').first();
-    this.loginCloseBtn   = page.locator('button._2KpZ6l._2doB4z').first();
+    this.loginSubmit     = page.locator('button:has-text("Login"), button._2AkmmA._1LctnI').first();
+    this.loginCloseBtn   = page.locator('span:has-text("✕"), button:has-text("✕"), button._2KpZ6l._2doB4z').first();
 
     // ── Home page sections ───────────────────────────────────────────
     this.categoryNav     = page.locator('nav._1lBxea, div._75nlfW a').first();
