@@ -12,10 +12,10 @@ dotenv.config({ path: path.resolve(__dirname, `.env.${env}`), override: false })
 
 module.exports = defineConfig({
   testDir: './tests',
-  fullyParallel: false,             // sequential for stability on Flipkart
+  fullyParallel: true,              // run tests in parallel to achieve 5-10 min limit
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,                       // retry each test up to 1 time in CI, 0 times locally to fail fast
-  workers: process.env.CI ? 2 : undefined,               // use 2 CPU cores in CI, all cores locally
+  workers: process.env.CI ? 4 : undefined,               // use 4 concurrent workers in CI (network-bound tests run faster)
   timeout: 25_000,                  // 25s per test (fail fast in CI)
   expect: {
     timeout: 5_000,                 // 5s for expect assertions

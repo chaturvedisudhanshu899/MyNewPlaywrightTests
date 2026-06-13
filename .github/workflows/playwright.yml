@@ -87,8 +87,22 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: 🗄️ Cache Playwright Browsers
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
+          restore-keys: |
+            playwright-browsers-
+
       - name: 🎭 Install Playwright (Chromium only)
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
+
+      - name: 🎭 Install Playwright System Dependencies (Chromium only)
+        if: steps.cache-playwright.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
 
       - name: 🧪 Run API tests  [env=${{ env.ENV }}]
         run: npx playwright test tests/flipkart-api.spec.js --project=API-Tests
@@ -150,8 +164,22 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: 🗄️ Cache Playwright Browsers
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
+          restore-keys: |
+            playwright-browsers-
+
       - name: 🎭 Install Playwright (${{ matrix.browser }})
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install ${{ matrix.browser }} --with-deps
+
+      - name: 🎭 Install Playwright System Dependencies (${{ matrix.browser }})
+        if: steps.cache-playwright.outputs.cache-hit == 'true'
+        run: npx playwright install-deps ${{ matrix.browser }}
 
       - name: 🧪 Run UI tests  [browser=${{ matrix.browser }}  env=${{ env.ENV }}]
         run: |
@@ -192,7 +220,7 @@ jobs:
 #  JOB 3 — FLAKY TESTS  (run TWICE in parallel to expose instability)
 # ──────────────────────────────────────────────────────────────────────────────
   flaky-tests:
-    name: 🎲 Flaky Tests — run #${{ matrix.run }}
+    name: 🎲 Flaky Tests — run #${{ matrix.run }} (Shard ${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
     if: |
       always() &&
@@ -204,6 +232,7 @@ jobs:
       fail-fast: false
       matrix:
         run: [1, 2]          # ← two identical runs in parallel
+        shard: [1, 2, 3]
 
     steps:
       - name: ⬇️ Checkout repository
@@ -218,33 +247,48 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: 🗄️ Cache Playwright Browsers
+        id: cache-playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-browsers-${{ hashFiles('package-lock.json') }}-${{ env.NODE_VERSION }}
+          restore-keys: |
+            playwright-browsers-
+
       - name: 🎭 Install Playwright (Chromium)
+        if: steps.cache-playwright.outputs.cache-hit != 'true'
         run: npx playwright install chromium --with-deps
+
+      - name: 🎭 Install Playwright System Dependencies (Chromium)
+        if: steps.cache-playwright.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
 
       - name: 🧪 Run Flaky tests — attempt #${{ matrix.run }}
         run: |
           npx playwright test tests/flipkart-flaky.spec.js \
             --project=Flaky-Suite \
             --retries=2 \
-            --output=test-results/flaky-run-${{ matrix.run }}
+            --output=test-results/flaky-run-${{ matrix.run }}-${{ matrix.shard }} \
+            --shard=${{ matrix.shard }}/3
         continue-on-error: true
         env:
           ENV: ${{ env.ENV }}
 
-      - name: 📤 Upload Allure results — run #${{ matrix.run }}
+      - name: 📤 Upload Allure results — run #${{ matrix.run }} (Shard ${{ matrix.shard }})
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: allure-results-flaky-run-${{ matrix.run }}
+          name: allure-results-flaky-run-${{ matrix.run }}-${{ matrix.shard }}
           path: allure-results/
           retention-days: 30
 
-      - name: 📤 Upload test results — run #${{ matrix.run }}
+      - name: 📤 Upload test results — run #${{ matrix.run }} (Shard ${{ matrix.shard }})
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-results-flaky-run-${{ matrix.run }}
-          path: test-results/flaky-run-${{ matrix.run }}/
+          name: test-results-flaky-run-${{ matrix.run }}-${{ matrix.shard }}
+          path: test-results/flaky-run-${{ matrix.run }}-${{ matrix.shard }}/
           retention-days: 30
 
 # ──────────────────────────────────────────────────────────────────────────────

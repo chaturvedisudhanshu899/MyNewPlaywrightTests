@@ -82,23 +82,15 @@ Using GitHub's `workflow_dispatch` trigger, non-technical team members can execu
 To scale the execution for extensive test suites (e.g., 1000+ test cases), the framework employs key optimization strategies:
 
 1. **Parallel Execution**:
-   * Playwright is configured to run tests using multiple CPU worker threads (`workers: process.env.CI ? 1 : undefined` which utilizes all available threads locally, and can be customized in CI).
-   * API tests are decoupled from browsers and run fully in parallel (`fullyParallel: true` in the `API-Tests` project).
-2. **Headless Execution**:
-   * Tests run in headless mode by default in the CI environment, reducing memory footprint and rendering overhead.
+   * Playwright is configured to run tests fully in parallel (`fullyParallel: true` in [playwright.config.js](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/playwright.config.js)) allowing multiple tests inside the same spec file to execute concurrently.
+   * Runs with `workers: 4` in CI, utilizing system resources efficiently to speed up network-bound tests.
+2. **Setup Caching**:
+   * All workflow jobs in [playwright.yml](file:///c:/Users/chatu/OneDrive/Desktop/MyNewPlaywrightTests/.github/workflows/playwright.yml) cache browser binaries (`~/.cache/ms-playwright`).
+   * On cache hits, setup time drops from 3 minutes to under 30 seconds (it only installs system libraries instead of downloading browsers).
 3. **Horizontal Scaling (Sharding)**:
-   * For very large suites (1000+ tests), we can easily shard the run across multiple virtual machines in GitHub Actions.
-   * *Example CI configuration change for sharding:*
-     ```yaml
-     strategy:
-       matrix:
-         shardIndex: [1, 2, 3, 4]
-         shardTotal: [4]
-     steps:
-       - name: Run Tests
-         run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
-     ```
-     This splits the 1000 tests into 4 parallel machines running ~250 tests each, completing the entire run in a fraction of the time.
+   * **UI Suite**: Sharded into 3 parallel runner nodes per browser (6 parallel machines).
+   * **Flaky Suite**: Sharded into 3 parallel runner nodes per run (6 parallel machines).
+   * This cuts down execution bottlenecks and brings total run time to within 5 to 10 minutes.
 
 ---
 
